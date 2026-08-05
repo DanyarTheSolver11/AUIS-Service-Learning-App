@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum EntryStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      Role     @default(STUDENT)
+  studentId String? // AUIS student ID number
+  entries   VolunteerEntry[]
+  createdAt DateTime @default(now())
+}
+
+// One row per semester (e.g. "Fall 2025"). Lets Student Services reuse
+// the same app every semester without redeploying anything.
+model Semester {
+  id        String    @id @default(cuid())
+  name      String    @unique // "Fall 2025"
+  startDate DateTime // hours before this date don't count
+  endDate   DateTime // hours after this date don't count
+  deadline  DateTime // submissions locked after this timestamp
+  isActive  Boolean   @default(true)
+  entries   VolunteerEntry[]
+  createdAt DateTime  @default(now())
+}
+
+model VolunteerEntry {
+  id       String @id @default(cuid())
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  semesterId String
+  semester   Semester @relation(fields: [semesterId], references: [id])
+
+  date       DateTime
+  department String
+  action     String // brief description of what the student did
+  hours      Float
+
+  supervisorName  String
+  supervisorEmail String
+
+  status         EntryStatus @default(PENDING)
+  approvalToken  String      @unique // unguessable token used in the emailed link
+  approvedAt     DateTime?
+  rejectedReason String?
+  reminderSentAt DateTime? // last time we nudged the supervisor
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([semesterId])
+  @@index([status])
+}
