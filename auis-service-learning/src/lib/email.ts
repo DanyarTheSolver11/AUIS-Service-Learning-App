@@ -19,7 +19,7 @@ export async function sendApprovalRequestEmail(opts: {
   approvalToken: string;
 }) {
   const link = appUrl(`/approve/${opts.approvalToken}`);
-  return resend.emails.send({
+  const result = await resend.emails.send({
     from: FROM,
     to: opts.supervisorEmail,
     subject: `Please confirm ${opts.studentName}'s volunteer hours`,
@@ -38,6 +38,12 @@ export async function sendApprovalRequestEmail(opts: {
       <p>Thank you,<br/>AUIS Student Services</p>
     `,
   });
+
+  if (result.error) {
+    console.error("Resend rejected the approval email:", JSON.stringify(result.error));
+    throw new Error(`Resend error: ${result.error.message ?? JSON.stringify(result.error)}`);
+  }
+  return result;
 }
 
 export async function sendReminderEmail(opts: {
@@ -47,7 +53,7 @@ export async function sendReminderEmail(opts: {
   approvalToken: string;
 }) {
   const link = appUrl(`/approve/${opts.approvalToken}`);
-  return resend.emails.send({
+  const result = await resend.emails.send({
     from: FROM,
     to: opts.supervisorEmail,
     subject: `Reminder: confirm ${opts.studentName}'s volunteer hours`,
@@ -57,6 +63,12 @@ export async function sendReminderEmail(opts: {
       <p><a href="${link}">Review the entry here</a></p>
     `,
   });
+
+  if (result.error) {
+    console.error("Resend rejected the reminder email:", JSON.stringify(result.error));
+    throw new Error(`Resend error: ${result.error.message ?? JSON.stringify(result.error)}`);
+  }
+  return result;
 }
 
 export async function sendStatusUpdateEmail(opts: {
@@ -68,7 +80,7 @@ export async function sendStatusUpdateEmail(opts: {
   reason?: string | null;
 }) {
   const approved = opts.status === "APPROVED";
-  return resend.emails.send({
+  const result = await resend.emails.send({
     from: FROM,
     to: opts.studentEmail,
     subject: approved
@@ -80,4 +92,10 @@ export async function sendStatusUpdateEmail(opts: {
           opts.reason ? `<p>Reason given: ${opts.reason}</p>` : ""
         }<p>Please edit the entry and resubmit, or contact your supervisor.</p>`,
   });
+
+  if (result.error) {
+    console.error("Resend rejected the status update email:", JSON.stringify(result.error));
+    throw new Error(`Resend error: ${result.error.message ?? JSON.stringify(result.error)}`);
+  }
+  return result;
 }
