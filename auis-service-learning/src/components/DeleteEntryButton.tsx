@@ -20,9 +20,9 @@ export function DeleteEntryButton({ entryId }: { entryId: string }) {
     <button
       onClick={handleDelete}
       disabled={loading}
-      className="text-xs text-red-500 underline hover:text-red-700 disabled:opacity-50"
+      className="text-[11px] uppercase tracking-wide text-claret-500/70 underline decoration-dotted underline-offset-2 transition-colors hover:text-claret-600 disabled:opacity-50"
     >
-      {loading ? "Deleting…" : "Delete"}
+      {loading ? "Removing…" : "Withdraw"}
     </button>
   );
 }

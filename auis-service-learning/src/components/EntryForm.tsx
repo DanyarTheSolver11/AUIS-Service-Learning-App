@@ -41,47 +41,55 @@ export function EntryForm() {
     }
   }
 
+  const fieldCx =
+    "mt-1.5 w-full rounded-sm border border-ink-900/15 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-ink-500/40 transition focus:border-brass-400 focus:outline-none focus:ring-2 focus:ring-brass-400/25";
+  const labelCx = "text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600";
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {error && (
+        <p className="rounded-sm border border-claret-500/30 bg-claret-500/5 px-4 py-3 text-sm text-claret-600">
+          {error}
+        </p>
+      )}
 
       <div>
-        <label className="text-sm font-medium">Date</label>
+        <label className={labelCx}>Date</label>
         <input
           type="date"
           required
           value={form.date}
           onChange={(e) => update("date", e.target.value)}
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={fieldCx}
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium">Department / Organization</label>
+        <label className={labelCx}>Department / Organization</label>
         <input
           type="text"
           required
           placeholder="e.g. AUIS Library"
           value={form.department}
           onChange={(e) => update("department", e.target.value)}
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={fieldCx}
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium">What did you do?</label>
+        <label className={labelCx}>What did you do?</label>
         <textarea
           required
           rows={3}
           placeholder="Briefly describe your volunteering activity"
           value={form.action}
           onChange={(e) => update("action", e.target.value)}
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={fieldCx}
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium">Number of hours</label>
+        <label className={labelCx}>Number of hours</label>
         <input
           type="number"
           step="0.5"
@@ -90,43 +98,44 @@ export function EntryForm() {
           required
           value={form.hours}
           onChange={(e) => update("hours", e.target.value)}
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={fieldCx}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
-          <label className="text-sm font-medium">Supervisor's name</label>
+          <label className={labelCx}>Supervisor&rsquo;s name</label>
           <input
             type="text"
             required
             value={form.supervisorName}
             onChange={(e) => update("supervisorName", e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={fieldCx}
           />
         </div>
         <div>
-          <label className="text-sm font-medium">Supervisor's email</label>
+          <label className={labelCx}>Supervisor&rsquo;s email</label>
           <input
             type="email"
             required
             value={form.supervisorEmail}
             onChange={(e) => update("supervisorEmail", e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className={fieldCx}
           />
         </div>
       </div>
 
-      <p className="text-xs text-slate-500">
-        Your supervisor will get an email with a one-click link to confirm this entry. No account needed on their end.
+      <p className="border-l-2 border-brass-400/50 pl-3 text-xs leading-relaxed text-ink-500">
+        Your supervisor will receive an email with a one-click link to confirm this entry.
+        No account is required on their end.
       </p>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+        className="w-full rounded-sm bg-ink-900 px-4 py-3 text-sm font-semibold tracking-wide text-parchment-50 transition hover:bg-ink-800 disabled:opacity-50"
       >
-        {loading ? "Submitting…" : "Submit entry & notify supervisor"}
+        {loading ? "Submitting…" : "Submit Entry & Notify Supervisor"}
       </button>
     </form>
   );

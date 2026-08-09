@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.EMAIL_FROM ?? "AUIS Service Learning <noreply@auis-slp.vercel.app>";
+const FROM = process.env.EMAIL_FROM ?? "AUIS Volunteering Hours Tracker <noreply@auis-vht.vercel.app>";
 
 function appUrl(path: string) {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -19,7 +19,7 @@ export async function sendApprovalRequestEmail(opts: {
   approvalToken: string;
 }) {
   const link = appUrl(`/approve/${opts.approvalToken}`);
-  const result = await resend.emails.send({
+  return resend.emails.send({
     from: FROM,
     to: opts.supervisorEmail,
     subject: `Please confirm ${opts.studentName}'s volunteer hours`,
@@ -38,12 +38,6 @@ export async function sendApprovalRequestEmail(opts: {
       <p>Thank you,<br/>AUIS Student Services</p>
     `,
   });
-
-  if (result.error) {
-    console.error("Resend rejected the approval email:", JSON.stringify(result.error));
-    throw new Error(`Resend error: ${result.error.message ?? JSON.stringify(result.error)}`);
-  }
-  return result;
 }
 
 export async function sendReminderEmail(opts: {
@@ -53,7 +47,7 @@ export async function sendReminderEmail(opts: {
   approvalToken: string;
 }) {
   const link = appUrl(`/approve/${opts.approvalToken}`);
-  const result = await resend.emails.send({
+  return resend.emails.send({
     from: FROM,
     to: opts.supervisorEmail,
     subject: `Reminder: confirm ${opts.studentName}'s volunteer hours`,
@@ -63,12 +57,6 @@ export async function sendReminderEmail(opts: {
       <p><a href="${link}">Review the entry here</a></p>
     `,
   });
-
-  if (result.error) {
-    console.error("Resend rejected the reminder email:", JSON.stringify(result.error));
-    throw new Error(`Resend error: ${result.error.message ?? JSON.stringify(result.error)}`);
-  }
-  return result;
 }
 
 export async function sendStatusUpdateEmail(opts: {
@@ -80,7 +68,7 @@ export async function sendStatusUpdateEmail(opts: {
   reason?: string | null;
 }) {
   const approved = opts.status === "APPROVED";
-  const result = await resend.emails.send({
+  return resend.emails.send({
     from: FROM,
     to: opts.studentEmail,
     subject: approved
@@ -92,10 +80,38 @@ export async function sendStatusUpdateEmail(opts: {
           opts.reason ? `<p>Reason given: ${opts.reason}</p>` : ""
         }<p>Please edit the entry and resubmit, or contact your supervisor.</p>`,
   });
+}
 
-  if (result.error) {
-    console.error("Resend rejected the status update email:", JSON.stringify(result.error));
-    throw new Error(`Resend error: ${result.error.message ?? JSON.stringify(result.error)}`);
+// Admin-authored message to many students at once (e.g. "deadline is in
+// one week and you haven't logged anything yet"). Resend's batch API
+// caps at 100 recipients per call, and BCC would leak everyone's address
+// to everyone else, so we chunk into individual sends run in parallel
+// batches instead. Returns which addresses failed so the admin UI can
+// report a partial-success count rather than a false "all sent".
+export async function sendBroadcastEmail(opts: {
+  recipients: string[];
+  subject: string;
+  message: string; // plain text, line breaks preserved
+}) {
+  const html = `<div style="white-space:pre-wrap;font-family:sans-serif;font-size:14px;line-height:1.6;">${opts.message
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")}</div><p style="margin-top:24px;color:#888;font-size:12px;">— AUIS Student Services, sent via the Volunteering Hours Tracker</p>`;
+
+  const BATCH_SIZE = 20;
+  const failed: string[] = [];
+
+  for (let i = 0; i < opts.recipients.length; i += BATCH_SIZE) {
+    const batch = opts.recipients.slice(i, i + BATCH_SIZE);
+    const results = await Promise.allSettled(
+      batch.map((to) => resend.emails.send({ from: FROM, to, subject: opts.subject, html }))
+    );
+    results.forEach((r, idx) => {
+      if (r.status === "rejected" || (r.status === "fulfilled" && r.value.error)) {
+        failed.push(batch[idx]);
+      }
+    });
   }
-  return result;
+
+  return { sent: opts.recipients.length - failed.length, failed };
 }

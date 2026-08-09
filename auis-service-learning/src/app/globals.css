@@ -2,6 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+@layer base {
+  ::selection {
+    background: #d1ab4a;
+    color: #0d2b1f;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Double-rule "certificate" border used on primary cards */
+  .rule-frame {
+    position: relative;
+    border: 1px solid theme("colors.brass.400" / 45%);
+  }
+  .rule-frame::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid theme("colors.brass.400" / 25%);
+    pointer-events: none;
+  }
+
+  .ledger-number {
+    font-variant-numeric: oldstyle-nums;
+    font-family: var(--font-display);
+  }
+}
+
+/* subtle brass underline sweep used on nav/link hovers */
+.brass-underline {
+  background-image: linear-gradient(theme('colors.brass.400'), theme('colors.brass.400'));
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  transition: background-size 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.brass-underline:hover {
+  background-size: 100% 1px;
 }
