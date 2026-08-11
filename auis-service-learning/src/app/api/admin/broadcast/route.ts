@@ -71,6 +71,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result);
   } catch (err) {
     console.error("Broadcast failed:", err);
-    return NextResponse.json({ error: "Resend rejected the broadcast." }, { status: 502 });
+    return NextResponse.json({ error: "Gmail API rejected the broadcast." }, { status: 502 });
   }
 }

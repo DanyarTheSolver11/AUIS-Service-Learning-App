@@ -25,7 +25,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     });
   } catch (err) {
     console.error("Failed to send reminder:", err);
-    return NextResponse.json({ error: "Resend rejected the reminder email." }, { status: 502 });
+    return NextResponse.json({ error: "Gmail API rejected the reminder email." }, { status: 502 });
   }
 
   await prisma.volunteerEntry.update({ where: { id: entry.id }, data: { reminderSentAt: new Date() } });

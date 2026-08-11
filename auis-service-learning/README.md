@@ -33,14 +33,15 @@ automatically — see `src/lib/awards.ts` if the thresholds ever change.
 ## Stack
 
 Next.js 14 (App Router) · TypeScript · PostgreSQL via Prisma · NextAuth
-(Google, domain-restricted) · Resend (email) · Tailwind CSS · Vercel
+(Google, domain-restricted) · Gmail API (email) · Tailwind CSS · Vercel
 (hosting + Cron).
 
 ## Local setup
 
 1. `npm install`
-2. Copy `.env.example` to `.env` and fill in Neon, Google OAuth, Resend,
-   `NEXTAUTH_SECRET`, and `CRON_SECRET` — see comments in `.env.example`.
+2. Copy `.env.example` to `.env` and fill in Neon, Google OAuth, Gmail
+   API credentials, `NEXTAUTH_SECRET`, and `CRON_SECRET` — see comments
+   in `.env.example`.
 3. `npx prisma db push`
 4. `npm run seed` (or just use the **Semesters** admin tab once running)
 5. `npm run dev` → http://localhost:3000
@@ -61,28 +62,63 @@ Next.js 14 (App Router) · TypeScript · PostgreSQL via Prisma · NextAuth
 
 ## ⚠️ Before supervisor emails will work for real students
 
-Right now, `EMAIL_FROM` almost certainly still points at Resend's shared
-`onboarding@resend.dev` sender. **That address can only deliver to the
-Resend account owner's own inbox** — never to a real supervisor. The
-admin Registry and Message Students pages will show a red banner as a
-reminder until this is fixed.
+Until `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`,
+and a real `EMAIL_FROM` address are set, supervisor confirmation emails
+silently fail to send. The admin Registry and Message Students pages
+show a red banner as a reminder until this is fixed.
 
-**This isn't a code bug — it's a one-time setup step:**
+**This sends mail through Google's own Gmail API over HTTPS — not SMTP,
+which Vercel's own docs note is unreliable on serverless functions.
+No third-party email service, no DNS access needed.** It's a one-time
+OAuth2 authorization using the same Google Cloud project you already
+made for login:
 
-1. Go to [resend.com/domains](https://resend.com/domains) → **Add Domain**.
-2. Enter a domain you can prove ownership of via DNS. Two options:
-   - **`auis.edu.krd`** (or better, a subdomain like
-     `volunteering.auis.edu.krd`, which doesn't touch AUIS's main mail
-     setup) — needs whoever controls AUIS's DNS (IT/registrar) to add a
-     few records Resend gives you (SPF, DKIM).
-   - **A domain you personally control**, if AUIS DNS access isn't
-     available — same process, faster since you don't need anyone else.
-3. Once Resend shows the domain as verified, update `EMAIL_FROM` in
-   Vercel's environment variables to something like
-   `AUIS Volunteering Hours Tracker <noreply@volunteering.auis.edu.krd>`.
-4. Redeploy. From that point on, **every** `@auis.edu.krd` supervisor
-   address works — no code changes, no per-recipient allowlisting, this
-   fixes it permanently for everyone.
+1. **Enable the Gmail API.** Google Cloud Console → your existing
+   project (the one from Google OAuth login setup) → **APIs & Services
+   → Library** → search "Gmail API" → **Enable**.
+
+2. **Allow the OAuth Playground to use your existing credentials.**
+   APIs & Services → Credentials → click your existing OAuth Client
+   (`SLP App`, or whatever you named it) → under **Authorized redirect
+   URIs**, add:
+   ```
+   https://developers.google.com/oauthplayground
+   ```
+   Keep your existing redirect URIs too — this just adds one more. Save.
+
+3. **Get a refresh token via Google's OAuth Playground.**
+   - Go to [developers.google.com/oauthplayground](https://developers.google.com/oauthplayground)
+   - Click the **gear icon** (top right) → check **"Use your own OAuth
+     credentials"** → paste your `GOOGLE_CLIENT_ID` and
+     `GOOGLE_CLIENT_SECRET` (same values already in your `.env`) → close
+     the settings panel
+   - In the left panel, find **Gmail API v1**, expand it, and check the
+     `https://www.googleapis.com/auth/gmail.send` scope
+   - Click **Authorize APIs** → sign in with **whichever Google account
+     should send these emails** (your own `@auis.edu.krd` account is the
+     natural choice) → allow access
+   - Click **Exchange authorization code for tokens**
+   - Copy the **Refresh token** shown — this is the long-lived
+     credential that lets the app send mail as that account indefinitely
+     without you staying logged in anywhere
+
+4. **Add everything to Vercel's environment variables:**
+   ```
+   GMAIL_CLIENT_ID       = same as GOOGLE_CLIENT_ID
+   GMAIL_CLIENT_SECRET   = same as GOOGLE_CLIENT_SECRET
+   GMAIL_REFRESH_TOKEN   = the refresh token from step 3
+   EMAIL_FROM            = AUIS Volunteering Hours Tracker <the-account-you-authorized@auis.edu.krd>
+   ```
+   `EMAIL_FROM` must be the *exact* address you signed in with in step 3
+   — Gmail won't let you send "from" an address you didn't authorize.
+
+5. **Redeploy.** From that point on, **every** `@auis.edu.krd` supervisor
+   address works as a recipient — this only restricts what address you
+   send *from*, not who you can send *to*.
+
+**Worth knowing:** a Google Workspace account (which `@auis.edu.krd`
+almost certainly is) can send up to 2,000 emails/day this way —
+comfortably more than this app will ever need.
 
 ## Rolling over to a new semester
 

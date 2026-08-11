@@ -6,16 +6,21 @@ Work through these in order. Nothing here is optional except where marked.
 
 Right now, confirmation emails can only reach your own inbox, not real
 supervisors. See the **"⚠️ Before supervisor emails will work"** section
-in `README.md` for the exact steps. In short:
+in `README.md` for the full walkthrough. In short:
 
-- [ ] Decide: verify `auis.edu.krd` (needs someone with AUIS DNS access —
-      ask Zhir who that is) or a subdomain of it, or use a personal
-      domain as a stopgap.
-- [ ] Add the domain in [resend.com/domains](https://resend.com/domains),
-      add the DNS records it gives you, wait for it to show "Verified."
-- [ ] Update `EMAIL_FROM` in Vercel's env vars, redeploy.
-- [ ] Test: submit one real entry with a friend's real `@auis.edu.krd`
-      email as supervisor (not your own), confirm they receive it.
+- [ ] Enable the **Gmail API** on your existing Google Cloud project.
+- [ ] Add `https://developers.google.com/oauthplayground` as an
+      authorized redirect URI on your existing OAuth Client.
+- [ ] Use [Google's OAuth Playground](https://developers.google.com/oauthplayground)
+      with your own Client ID/Secret to authorize the `gmail.send` scope,
+      signed in as the account that should send these emails (your own
+      `@auis.edu.krd` works) — copy the **Refresh token** it gives you.
+- [ ] In Vercel, set `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`,
+      `GMAIL_REFRESH_TOKEN`, and `EMAIL_FROM` (must match the account you
+      authorized exactly), redeploy.
+- [ ] Test: submit one real entry with a **friend's** real
+      `@auis.edu.krd` email as supervisor (not your own), confirm they
+      receive it.
 
 **Do not proceed past this step until confirmation emails reach a real
 `@auis.edu.krd` address that isn't your own.** Everything below assumes
