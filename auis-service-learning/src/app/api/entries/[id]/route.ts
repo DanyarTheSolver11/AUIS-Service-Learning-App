@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
@@ -70,6 +71,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       });
     } catch (err) {
       console.error("Failed to send approval email:", err);
+      Sentry.captureException(err);
     }
   }
 

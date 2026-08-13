@@ -125,6 +125,29 @@ comfortably more than this app will ever need.
 Handled entirely from the **Semesters** admin tab — no code or database
 changes needed. See `STUDENT_SERVICES_GUIDE.md`.
 
+## Error monitoring (Sentry)
+
+Optional but strongly recommended before real launch — without it, the
+only way to know something broke is a student or the manager telling
+you, or manually digging through Vercel's logs (which is how every
+email-sending issue during this app's build got diagnosed).
+
+1. Sign up free at [sentry.io](https://sentry.io) → Create Project →
+   platform **Next.js**.
+2. Copy the DSN it gives you into `NEXT_PUBLIC_SENTRY_DSN` in Vercel's
+   environment variables.
+3. Redeploy. That's the minimum — errors now get captured automatically,
+   including every silent email-sending failure this app has, which are
+   the ones that previously only showed up as a `console.error` line
+   buried in Vercel's logs.
+4. Optional, for readable (non-minified) stack traces in Sentry's
+   dashboard instead of a wall of compiled JS: also set
+   `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` (steps in
+   `.env.example`).
+
+If `NEXT_PUBLIC_SENTRY_DSN` is left unset, Sentry stays fully disabled
+(no errors, no build failures) — safe to leave out during local dev.
+
 ## Architecture notes
 
 - `Semester.isActive` — exactly one row is true at a time; every write

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/prisma";
 import { sendReminderEmail } from "@/lib/email";
 
@@ -50,6 +51,7 @@ export async function GET(req: NextRequest) {
       reminded++;
     } catch (err) {
       console.error(`Cron reminder failed for entry ${entry.id}:`, err);
+      Sentry.captureException(err);
     }
   }
 

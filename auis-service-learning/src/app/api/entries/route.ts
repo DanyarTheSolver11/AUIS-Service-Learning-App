@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
@@ -86,6 +87,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     // Entry is saved either way; the student/admin can trigger a resend later.
     console.error("Failed to send approval email:", err);
+    Sentry.captureException(err);
   }
 
   return NextResponse.json({ entry }, { status: 201 });

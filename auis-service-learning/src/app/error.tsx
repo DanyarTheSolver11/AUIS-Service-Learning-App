@@ -1,8 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { Eagle } from "@/components/Eagle";
 
-export default function Error({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  useEffect(() => {
+    Sentry.captureException(error, { tags: { digest: error.digest } });
+  }, [error]);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-ink-800 px-6">
       <div className="text-center">

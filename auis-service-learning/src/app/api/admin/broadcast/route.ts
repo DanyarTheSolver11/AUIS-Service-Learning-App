@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 import { requireAdminSession } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
@@ -71,6 +72,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result);
   } catch (err) {
     console.error("Broadcast failed:", err);
+    Sentry.captureException(err);
     return NextResponse.json({ error: "Gmail API rejected the broadcast." }, { status: 502 });
   }
 }

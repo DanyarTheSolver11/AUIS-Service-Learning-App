@@ -70,7 +70,17 @@ Click through this as if you were three different people:
       cut off or broken.
 - [ ] Confirm `/help` reads clearly to someone who's never seen the app.
 
-## 6. (Optional) Custom domain
+## 6. (Optional, but recommended) Turn on error monitoring
+
+- [ ] Sign up free at [sentry.io](https://sentry.io) → Create Project → Next.js.
+- [ ] Add `NEXT_PUBLIC_SENTRY_DSN` in Vercel, redeploy.
+- [ ] Trigger a harmless test error somehow (e.g. temporarily break
+      something small, or just wait for the first real one) and confirm
+      it shows up in Sentry's dashboard within a minute or two.
+- [ ] From now on, check Sentry occasionally instead of manually digging
+      through Vercel logs when something seems off.
+
+## 7. (Optional) Custom domain
 
 `your-app.vercel.app` works fine, but if you want it to feel more
 official: Vercel project → Settings → Domains → add something like
@@ -78,7 +88,7 @@ official: Vercel project → Settings → Domains → add something like
 cosmetic — skip this if it's not worth the extra DNS coordination right
 now.
 
-## 7. Walk the manager through it
+## 8. Walk the manager through it
 
 Before announcing to the whole community, sit with the Student Services
 manager (in person or a call) and walk through `STUDENT_SERVICES_GUIDE.md`
@@ -90,7 +100,7 @@ together — specifically:
 
 Get her explicit sign-off that it's ready before the community sees it.
 
-## 8. Announce it
+## 9. Announce it
 
 Once steps 1–7 are done, send the announcement. A draft is below — adapt
 freely, but the structure (what changed, what stays the same, a direct
@@ -134,7 +144,7 @@ a follow-up post closer to the deadline) — the **Message Students**
 admin feature can also send a reminder directly through the app to
 anyone who still hasn't started, once you've got some data to work with.
 
-## 9. After launch
+## 10. After launch
 
 - [ ] Check back after a few days — Registry's stats and Entries tab
       will tell you if things are moving (students submitting,

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 import { requireAdminSession } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
@@ -63,6 +64,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       });
     } catch (err) {
       console.error("Failed to notify student of admin override:", err);
+      Sentry.captureException(err);
     }
 
     return NextResponse.json({ entry: updated });
